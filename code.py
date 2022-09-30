@@ -1,14 +1,14 @@
 ### Refactored async watch code
-#TODO:
-#think about how to use encoder position and encoder delta to make behavior work as intended. see if you can fold that all into one Class.
-#keep working on GPS time. Dive into the I2C part of the GPS library to find a solution.
+# TODO:
+# think about how to use encoder position and encoder delta to make behavior work as intended. see if you can fold that all into one Class.
+# keep working on GPS time. Dive into the I2C part of the GPS library to find a solution.
 import random
 import asyncio
 import board
 import digitalio
 
-#deuglify this later
-#sharp_cs = digitalio.DigitalInOut(board.D11)
+# deuglify this later
+# sharp_cs = digitalio.DigitalInOut(board.D11)
 airlift_cs = digitalio.DigitalInOut(board.D12)
 airlift_ready = digitalio.DigitalInOut(board.A5)
 airlift_reset = digitalio.DigitalInOut(board.A4)
@@ -25,7 +25,12 @@ import terminalio
 import adafruit_display_text
 from adafruit_display_text import label
 from adafruit_displayio_sh1107 import SH1107, DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297
-from adafruit_seesaw import seesaw, rotaryio, digitalio, neopixel ## FIX THIS DOUBLED DIGITALIO
+from adafruit_seesaw import (
+    seesaw,
+    rotaryio,
+    digitalio,
+    neopixel,
+)  ## FIX THIS DOUBLED DIGITALIO
 from rainbowio import colorwheel
 import adafruit_sht4x
 from adafruit_dps310 import DPS310
@@ -50,9 +55,11 @@ i2c = busio.I2C(
 # initialize SPI bus
 spi_bus = busio.SPI(board.SCK, board.MOSI, board.MISO)
 
-#initialize airlift
+# initialize airlift
 
-airlift = adafruit_esp32spi.ESP_SPIcontrol(spi_bus, airlift_cs, airlift_ready, airlift_reset)
+airlift = adafruit_esp32spi.ESP_SPIcontrol(
+    spi_bus, airlift_cs, airlift_ready, airlift_reset
+)
 
 # initialize RTC
 days = ("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
@@ -79,7 +86,7 @@ enc_neopixel_0 = neopixel.NeoPixel(seesaw_0, 6, 1)
 enc_neopixel_0.brightness = 0.5
 
 
-#initialize rotary encoder 1
+# initialize rotary encoder 1
 seesaw_1 = seesaw.Seesaw(i2c, addr=0x36)
 seesaw_1.pin_mode(24, seesaw_1.INPUT_PULLUP)
 button_1 = digitalio.DigitalIO(seesaw_1, 24)
@@ -124,16 +131,19 @@ display_bus_1 = displayio.FourWire(
     spi_bus, command=board.D6, chip_select=board.D5, reset=board.D9
 )
 
-#initialize display bus for 144x168 SHARP memory display FIX DOUBLED DIGITALIO LIBRARY- KINDA UGLY THE WAY IT'S SET UP with command in the imports
+# initialize display bus for 144x168 SHARP memory display FIX DOUBLED DIGITALIO LIBRARY- KINDA UGLY THE WAY IT'S SET UP with command in the imports
 
 sharp_cs = board.D11
-framebuffer = sharpdisplay.SharpMemoryFramebuffer(spi_bus, sharp_cs, width=144, height=168, baudrate=8000000)
-display_2 = framebufferio.FramebufferDisplay(framebuffer, rotation = 90, auto_refresh = True)
+framebuffer = sharpdisplay.SharpMemoryFramebuffer(
+    spi_bus, sharp_cs, width=144, height=168, baudrate=8000000
+)
+display_2 = framebufferio.FramebufferDisplay(
+    framebuffer, rotation=90, auto_refresh=True
+)
 
 
-
-#setup for display 0 backlight
-backlight = pwmio.PWMOut(board.TFT_BACKLIGHT, frequency = 5000, duty_cycle = 0)
+# setup for display 0 backlight
+backlight = pwmio.PWMOut(board.TFT_BACKLIGHT, frequency=5000, duty_cycle=0)
 
 # setup for width, height and rotation for built-in TFT
 WIDTH_0 = 240
@@ -144,7 +154,7 @@ BORDER_0 = 0
 display_0 = ST7789(
     display_bus_0,
     rotation=ROTATION_0,
-    auto_refresh = False,
+    auto_refresh=False,
     width=WIDTH_0,
     height=HEIGHT_0,
     rowstart=40,
@@ -163,7 +173,7 @@ display_1 = SH1107(
     height=HEIGHT_1,
     display_offset=DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297,
     rotation=ROTATION_1,
-    auto_refresh = False
+    auto_refresh=False,
 )
 
 # setup colors for 128x128 monochrome OLED
@@ -174,18 +184,18 @@ font_1 = terminalio.FONT
 text_color_1 = 0xFFFFFF
 
 
-#setup display Groups
+# setup display Groups
 
 splash_0 = displayio.Group()
 splash_1 = displayio.Group()
 splash_2 = displayio.Group()
 
-#setup fonts for labels
+# setup fonts for labels
 font = terminalio.FONT
 text_color = 0xFFFFFF
 
 
-#setup animated bitmaps for display 0
+# setup animated bitmaps for display 0
 
 me_bitmap, me_palette = adafruit_imageload.load(
     "/mesprites.bmp", bitmap=displayio.Bitmap, palette=displayio.Palette
@@ -193,7 +203,12 @@ me_bitmap, me_palette = adafruit_imageload.load(
 
 
 me_sprite = displayio.TileGrid(
-    me_bitmap, pixel_shader=me_palette, width=1, height=1, tile_width=100, tile_height=112
+    me_bitmap,
+    pixel_shader=me_palette,
+    width=1,
+    height=1,
+    tile_width=100,
+    tile_height=112,
 )
 
 
@@ -227,7 +242,9 @@ splash_0.append(nyan_group)
 
 nyan_group.hidden = True
 
-dino_bitmap, dino_palette = adafruit_imageload.load("/dinorun.bmp", bitmap = displayio.Bitmap, palette = displayio.Palette)
+dino_bitmap, dino_palette = adafruit_imageload.load(
+    "/dinorun.bmp", bitmap=displayio.Bitmap, palette=displayio.Palette
+)
 dino_sprite = displayio.TileGrid(
     dino_bitmap,
     pixel_shader=dino_palette,
@@ -246,7 +263,7 @@ splash_0.append(dino_group)
 dino_group.hidden = True
 
 
-#setup text for display 0
+# setup text for display 0
 
 d0_text_1 = " "
 d0_label_1 = label.Label(font, text=d0_text_1, color=text_color, scale=2)
@@ -298,31 +315,39 @@ d0_label_7.y = 0
 splash_0.append(d0_label_7)
 
 
-#setup text for display 1
+# setup text for display 1
 
 d1_text_1 = " "
-d1_label_1 = label.Label(font, text=d1_text_1, color=text_color, scale=2)
+d1_label_1 = label.Label(
+    font, text=d1_text_1, color=text_color, scale=2, line_spacing=0.9
+)
 d1_label_1.x = 0
 d1_label_1.y = 0
 
 splash_1.append(d1_label_1)
 
 d1_text_2 = " "
-d1_label_2 = label.Label(font, text=d1_text_2, color=text_color, scale=2)
+d1_label_2 = label.Label(
+    font, text=d1_text_2, color=text_color, scale=2, line_spacing=0.9
+)
 d1_label_2.x = 0
 d1_label_2.y = 0
 
 splash_1.append(d1_label_2)
 
 d1_text_3 = " "
-d1_label_3 = label.Label(font, text=d1_text_3, color=text_color, scale=2)
+d1_label_3 = label.Label(
+    font, text=d1_text_3, color=text_color, scale=2, line_spacing=0.9
+)
 d1_label_3.x = 0
 d1_label_3.y = 0
 
 splash_1.append(d1_label_3)
 
 d1_text_4 = " "
-d1_label_4 = label.Label(font, text=d1_text_4, color=text_color, scale=2)
+d1_label_4 = label.Label(
+    font, text=d1_text_4, color=text_color, scale=2, line_spacing=0.9
+)
 d1_label_4.x = 0
 d1_label_4.y = 0
 
@@ -350,8 +375,7 @@ d1_label_7.y = 0
 splash_1.append(d1_label_7)
 
 
-
-#setup text for display 2
+# setup text for display 2
 
 d2_text_1 = " "
 d2_label_1 = label.Label(font, text=d2_text_1, color=text_color, scale=2)
@@ -403,7 +427,7 @@ d2_label_7.y = 0
 splash_2.append(d2_label_7)
 
 
-#setup bitmaps for display 2
+# setup bitmaps for display 2
 barcode1_bitmap, barcode1_palette = adafruit_imageload.load(
     "/barcode1.bmp", bitmap=displayio.Bitmap, palette=displayio.Palette
 )
@@ -422,7 +446,9 @@ barcode1_group.y = 0
 
 splash_2.append(barcode1_group)
 
-qrcode1_bitmap, qrcode1_palette = adafruit_imageload.load("/qrcode1.bmp", bitmap = displayio.Bitmap, palette = displayio.Palette)
+qrcode1_bitmap, qrcode1_palette = adafruit_imageload.load(
+    "/qrcode1.bmp", bitmap=displayio.Bitmap, palette=displayio.Palette
+)
 qrcode1_sprite = displayio.TileGrid(
     qrcode1_bitmap,
     pixel_shader=barcode1_palette,
@@ -442,7 +468,7 @@ splash_2.append(qrcode1_group)
 barcode1_group.hidden = True
 qrcode1_group.hidden = True
 
-#show displays
+# show displays
 display_0.show(splash_0)
 display_1.show(splash_1)
 display_2.show(splash_2)
@@ -451,7 +477,8 @@ display_2.show(splash_2)
 # setup variables to manage flow control between watch "screens"
 
 
-#class definition to hold sensor values
+# class definition to hold sensor values
+
 
 class Sensorvals:
     def __init__(self):
@@ -471,42 +498,50 @@ class Sensorvals:
         self.pm25 = None  # PM 2.5 value
         self.pm100 = None  # PM 10 value
 
-        #battery level
+        # battery level
         self.voltage = None
         self.batt_percent = None
 
-#create Sensorvals instance
+
+# create Sensorvals instance
 sensorvals = Sensorvals()
 
 
-#class definition for generic value passing
+# class definition for generic value passing
 class Valpass:
     """class used to pass values between coroutines"""
 
     def __init__(self, value):
         self.value = value
 
+
 class Rotary_state:
     """class used to record and pass rotary encoder states"""
-    def __init__(self):
-       self.delta = 0
-       self.button = False
 
-#create two rotary states (when you get the next rotary encoder)
+    def __init__(self):
+        self.delta = 0
+        self.button = False
+
+
+# create two rotary states (when you get the next rotary encoder)
 rotary_state_0 = Rotary_state()
 rotary_state_1 = Rotary_state()
 
-class Programstate:
-    """ class to hold the various screen states """
-    def __init__(self):
-        self.d0 = 0 #main state of screen 0
-        self.d1 = 0 #main state of screen 1
 
-#create Programstate instance called program_state for state switching.
+class Programstate:
+    """class to hold the various screen states"""
+
+    def __init__(self):
+        self.d0 = 0  # main state of screen 0
+        self.d1 = 0  # main state of screen 1
+
+
+# create Programstate instance called program_state for state switching.
 program_state = Programstate()
 
+
 async def state_switcher(program_state):
-    d0_state_count = 4
+    d0_state_count = 5
     d1_state_count = 4
     try:
         init_pos_0 = encoder_0.position
@@ -517,10 +552,10 @@ async def state_switcher(program_state):
         try:
             if encoder_0.position != init_pos_0:
                 delta_0 = encoder_0.position - init_pos_0
-                program_state.d0 = (delta_0 + program_state.d0)%d0_state_count
+                program_state.d0 = (delta_0 + program_state.d0) % d0_state_count
                 print("Program State d0: " + str(program_state.d0))
                 init_pos_0 = encoder_0.position
-                program_state.d1 = 0 # this line resets the menu for screen 1
+                program_state.d1 = 0  # this line resets the menu for screen 1
                 if program_state.d0 == 0:
                     d1_state_count = 4
                 if program_state.d0 == 1:
@@ -529,9 +564,11 @@ async def state_switcher(program_state):
                     d1_state_count = 3
                 if program_state.d0 == 3:
                     d1_state_count = 2
+                if program_state.d0 == 4:
+                    d1_state_count = 1
             if encoder_1.position != init_pos_1:
                 delta_1 = encoder_1.position - init_pos_1
-                program_state.d1 = (delta_1 + program_state.d1)%d1_state_count
+                program_state.d1 = (delta_1 + program_state.d1) % d1_state_count
                 print("Program State d1: " + str(program_state.d1))
                 init_pos_1 = encoder_1.position
         except:
@@ -539,10 +576,7 @@ async def state_switcher(program_state):
         await asyncio.sleep(0)
 
 
-
-
-
-#display 0 default date time screen updates
+# display 0 default date time screen updates
 async def d0_datetime(program_state):
     while True:
         if program_state.d0 == 0:
@@ -554,7 +588,10 @@ async def d0_datetime(program_state):
             d0_label_6.hidden = False
             d0_label_7.hidden = True
 
-            t = rtc.datetime
+            try:
+                t = rtc.datetime
+            except:
+                print("RTC fail.")
             if t.tm_hour == 0:
                 hour_12 = 12
                 ampm = "AM"
@@ -596,7 +633,10 @@ async def d0_datetime(program_state):
             d0_label_6.x = 30
             d0_label_6.y = 124
             try:
-                d0_label_6.text = "Battery: %0.3f Volts / %0.1f%%" % (sensorvals.voltage, sensorvals.batt_percent)
+                d0_label_6.text = "Battery: %0.3f Volts / %0.1f%%" % (
+                    sensorvals.voltage,
+                    sensorvals.batt_percent,
+                )
             except:
                 d0_label_6.text = "Battery Read Fail."
 
@@ -608,7 +648,9 @@ async def d0_datetime(program_state):
             display_0.refresh()
         await asyncio.sleep(0.5)
 
-#display 0 nyancat animation
+
+# display 0 nyancat animation
+
 
 async def d0_nyancat(program_state):
     nyandex = 0
@@ -622,7 +664,9 @@ async def d0_nyancat(program_state):
             nyan_group.hidden = True
         await asyncio.sleep(0.2)
 
-#display 0 wifi mode
+
+# display 0 wifi mode
+
 
 async def d0_wifi(program_state):
     while True:
@@ -646,7 +690,8 @@ async def d0_wifi(program_state):
         await asyncio.sleep(0.2)
 
 
-#display 0 Barcode Mode
+# display 0 Barcode Mode
+
 
 async def d0_barcodes(program_state):
     while True:
@@ -669,7 +714,9 @@ async def d0_barcodes(program_state):
             display_0.refresh()
         await asyncio.sleep(0.2)
 
-#display 0 GPS Mode
+
+# display 0 GPS Mode
+
 
 async def d0_gps(program_state):
     while True:
@@ -709,12 +756,12 @@ async def d0_gps(program_state):
                 print("gps update fail.")
             print(gps.nmea_sentence)
             if gps.timestamp_utc:
-                print ("gps time fix acquired!")
+                print("gps time fix acquired!")
                 try:
                     gps_time = gps.timestamp_utc
                     gps_utc_seconds = time.mktime(gps_time)
                     gps_est_seconds = gps_utc_seconds - est_offset + dst_offset
-                    #rtc.datetime = time.localtime(gps_est_seconds)
+                    # rtc.datetime = time.localtime(gps_est_seconds)
 
                     d0_label_2.text = "GPS EST: " + str(gps_est_seconds)
                 except:
@@ -724,9 +771,31 @@ async def d0_gps(program_state):
             display_0.refresh()
         await asyncio.sleep(0.2)
 
+
+# display 0 Plant State
+async def d0_plants(program_state):
+    while True:
+        if program_state.d0 == 4:
+            d0_label_1.hidden = False
+            d0_label_2.hidden = True
+            d0_label_3.hidden = True
+            d0_label_4.hidden = True
+            d0_label_5.hidden = True
+            d0_label_6.hidden = True
+            d0_label_7.hidden = True
+
+            d0_label_1.scale = 2
+            d0_label_1.x = 0
+            d0_label_1.y = 10
+            d0_label_1.text = "Plants Placeholder!"
+
+        display_0.refresh()
+        await asyncio.sleep(0.5)
+
+
 async def d1_blank(program_state):
     while True:
-        if (program_state.d1 == 0):
+        if program_state.d1 == 0:
             d1_label_1.hidden = True
             d1_label_2.hidden = True
             d1_label_3.hidden = True
@@ -737,14 +806,14 @@ async def d1_blank(program_state):
         display_1.refresh()
         await asyncio.sleep(0.5)
 
+
 async def d2_blank(program_state):
     while True:
-        if (program_state.d0 == 2 and program_state.d1 == 0):
+        if program_state.d0 == 2 and program_state.d1 == 0:
             barcode1_group.hidden = True
             qrcode1_group.hidden = True
             display_2.refresh()
         await asyncio.sleep(0.2)
-
 
 
 async def d1_datetime(program_state):
@@ -763,7 +832,10 @@ async def d1_datetime(program_state):
             d1_label_6.hidden = False
 
             d1_label_7.hidden = False
-            t = rtc.datetime
+            try:
+                t = rtc.datetime
+            except:
+                print("RTC fail. D1")
             if t.tm_hour == 0:
                 hour_12 = 12
                 ampm = "AM"
@@ -805,7 +877,10 @@ async def d1_datetime(program_state):
             d1_label_6.x = 0
             d1_label_6.y = 120
             try:
-                d1_label_6.text = "Batt: %0.3fV / %0.1f%%" % (sensorvals.voltage, sensorvals.batt_percent)
+                d1_label_6.text = "Batt: %0.3fV / %0.1f%%" % (
+                    sensorvals.voltage,
+                    sensorvals.batt_percent,
+                )
             except:
                 d1_label_6.text = "   Battery Read Fail."
 
@@ -816,29 +891,75 @@ async def d1_datetime(program_state):
             display_1.refresh()
         await asyncio.sleep(0.5)
 
+
 async def d1_pm25(program_state, sensorvals):
     while True:
         if program_state.d0 == 0 and program_state.d1 == 2:
             d1_label_1.hidden = False
             d1_label_2.hidden = False
-            d1_label_3.hidden = True
-            d1_label_4.hidden = True
-            d1_label_5.hidden = True
+            d1_label_3.hidden = False
+            d1_label_4.hidden = False
+            d1_label_5.hidden = False
             d1_label_6.hidden = True
             d1_label_7.hidden = True
 
             d1_label_1.scale = 2
             d1_label_1.x = 0
             d1_label_1.y = 8
-            d1_label_1.text = "PM 2.5:"
+            d1_label_1.text = "PM2.5:"
 
-            d1_label_2.scale = 5
-            d1_label_2.x = 10
-            d1_label_2.y = 60
-            d1_label_2.text = str(sensorvals.pm25)
+            d1_label_2.scale = 3
+            d1_label_2.x = 0
+            d1_label_2.y = 38
+            try:
+                d1_label_2.text = "{:03d}".format(sensorvals.pm25)
+            except:
+                d1_label_2.text = "Err"
+
+            d1_label_3.scale = 1
+            d1_label_3.x = 55
+            d1_label_3.y = 30
+            d1_label_3.text = "ug/\nm^3"
+
+            d1_label_4.scale = 1
+            d1_label_4.x = 0
+            d1_label_4.y = 72
+            d1_label_4.text = (
+                "0.3um: "
+                + str(sensorvals.p03)
+                + "\n0.5um: "
+                + str(sensorvals.p05)
+                + "\n1.0um: "
+                + str(sensorvals.p10)
+                + "\n2.5um: "
+                + str(sensorvals.p25)
+                + "\n5.0um: "
+                + str(sensorvals.p50)
+                + "\n10 um: "
+                + str(sensorvals.p100)
+            )
+
+            d1_label_5.scale = 1
+            d1_label_5.x = 0
+            d1_label_5.y = 60
+            d1_label_5.text = "Counts/0.1L"
+
+            # d1_label_6.scale = 3
+            # d1_label_6.x = 75
+            # d1_label_6.y = 38
+            # try:
+            #    d1_label_6.text = "{:03d}".format(sensorvals.pm100)
+            # except:
+            #    d1_label_6.text = "Err"
+            #
+            # d1_label_7.scale = 1
+            # d1_label_7.x = 100
+            # d1_label_7.y = 70
+            # d1_label_7.text = "ug/\nm^3"
 
             display_1.refresh()
         await asyncio.sleep(1.0)
+
 
 async def d1_tph(program_state, sensorvals):
     while True:
@@ -855,7 +976,9 @@ async def d1_tph(program_state, sensorvals):
             d1_label_1.x = 0
             d1_label_1.y = 12
             try:
-                d1_label_1.text = "Tf: " + str(sensorvals.temperature * (9/5)+32) + "F"
+                d1_label_1.text = (
+                    "Tf: " + str(sensorvals.temperature * (9 / 5) + 32) + "F"
+                )
             except:
                 d1_label_1.text = "Tf: Sensor Failure."
 
@@ -921,7 +1044,7 @@ async def d1_gps_timeset(program_state):
             d1_label_2.y = 4
             if not button_1.value and not button_1_held:
                 button_1_held = True
-                d1_label_1.text ="Release!"
+                d1_label_1.text = "Release!"
                 d1_label_2.text = "GPS => RTC timeset"
                 display_1.refresh()
                 print("Button 1 pressed")
@@ -997,9 +1120,10 @@ async def d2_pm25(program_state, sensorvals):
             d2_label_2.y = 80
             d2_label_2.text = str(sensorvals.pm25)
 
-            #display_2.refresh(target_frames_per_second = 1, minimum_frames_per_second = 0) test to see if can turn auto off. nope.
-            #print("display 2 refreshed.")
+            # display_2.refresh(target_frames_per_second = 1, minimum_frames_per_second = 0) test to see if can turn auto off. nope.
+            # print("display 2 refreshed.")
         await asyncio.sleep(1.0)
+
 
 async def poll_battery(program_state, batt_sensor, sensorvals):
     while True:
@@ -1013,8 +1137,8 @@ async def poll_battery(program_state, batt_sensor, sensorvals):
         await asyncio.sleep(2.0)
 
 
-
 # rotary encoder functions
+
 
 async def monitor_rotary(rotary, button, rotary_state):
     position = 0
@@ -1042,7 +1166,7 @@ async def monitor_rotary(rotary, button, rotary_state):
         await asyncio.sleep(0)
 
 
-#function to poll air quality
+# function to poll air quality
 async def poll_pmsa003i(program_state, aqsensor, sensorvals):
     while True:
         if program_state.d0 == 0:
@@ -1070,7 +1194,8 @@ async def poll_pmsa003i(program_state, aqsensor, sensorvals):
                 sensorvals.pm100 = None
         await asyncio.sleep(1.0)
 
-#function to poll SHT40 sensor
+
+# function to poll SHT40 sensor
 async def poll_sht40(program_state, shtsensor, sensorvals):
     while True:
         if program_state.d0 == 0:
@@ -1080,9 +1205,10 @@ async def poll_sht40(program_state, shtsensor, sensorvals):
                 print("SHT40 read failure.")
                 sensorvals.temperature = None
                 sensorvals.humidity = None
-        await asyncio.sleep (1.0)
+        await asyncio.sleep(1.0)
 
-#function to poll DPS310 sensor
+
+# function to poll DPS310 sensor
 async def poll_dps310(program_state, dps_sensor, sensorvals):
     while True:
         if program_state.d0 == 0:
@@ -1094,7 +1220,7 @@ async def poll_dps310(program_state, dps_sensor, sensorvals):
         await asyncio.sleep(1.0)
 
 
-#test function
+# test function
 async def test_sensor_prints(sensorvals):
     while True:
         try:
@@ -1107,8 +1233,7 @@ async def test_sensor_prints(sensorvals):
         await asyncio.sleep(1.0)
 
 
-
-#turn to backlight
+# turn to backlight
 async def click_backlight():
     prevtime = time.mktime(rtc.datetime)
     try:
@@ -1133,6 +1258,7 @@ async def click_backlight():
             print("click backlight fail.")
         await asyncio.sleep(0.2)
 
+
 async def airlift_scan_networks(program_state):
     button_1_held = False
     scan_results = False
@@ -1155,14 +1281,14 @@ async def airlift_scan_networks(program_state):
             d1_label_2.scale = 1
             d1_label_2.x = 0
             d1_label_2.y = 4
-            #display_1.refresh()
+            # display_1.refresh()
 
-            #print("button_0: " + str(button_0.value))
-            #print("button_1: " + str(button_1.value))
-            #print(" ")
+            # print("button_0: " + str(button_0.value))
+            # print("button_1: " + str(button_1.value))
+            # print(" ")
             if not button_1.value and not button_1_held:
                 button_1_held = True
-                d1_label_1.text ="Release!"
+                d1_label_1.text = "Release!"
                 d1_label_2.text = "2.4GHz SSID SCAN..."
                 display_1.refresh()
                 print("Button 1 pressed")
@@ -1177,8 +1303,20 @@ async def airlift_scan_networks(program_state):
                     display_1.refresh()
                     ap_list_string = ""
                     for ap in airlift.scan_networks():
-                        print("\t%s\t\tRSSI: %d" % (str(ap['ssid'], 'utf-8'), ap['rssi']))
-                        ap_list_string = ap_list_string + ("%s\tRSSI: %d" % (str(ap['ssid'], 'utf-8'), ap['rssi'])) + "\n"
+                        print(
+                            "\t%s\t\tRSSI: %d" % (str(ap["ssid"], "utf-8"), ap["rssi"])
+                        )
+                        ap_list_string = (
+                            ap_list_string
+                            + (
+                                "%.14s %ddBm"
+                                % (
+                                    str(ap["ssid"] + "                      ", "utf-8"),
+                                    ap["rssi"],
+                                )
+                            )
+                            + "\n"
+                        )
                     d1_label_1.text = ap_list_string
                     d1_label_2.text = "2.4GHz Scan Results:"
                     display_1.refresh()
@@ -1188,6 +1326,7 @@ async def airlift_scan_networks(program_state):
                 d1_label_1.text = "Click to scan! 0_0"
                 d1_label_2.text = "2.4GHz SSID SCAN..."
         await asyncio.sleep(0.2)
+
 
 """
 ## setup test code for displays (GPS debugging)
@@ -1238,24 +1377,21 @@ async def gps_rtc_timeset(gps):
     prev_gps_time = rtc.datetime
     gps_time = rtc.datetime
     while True:
-    #try:
-        while gps.update(): # the runs forever while gps.update is True. Need to dive into the gps i2c library to find out how to directly parse sentences to avoid this problem.
+        # try:
+        while (
+            gps.update()
+        ):  # the runs forever while gps.update is True. Need to dive into the gps i2c library to find out how to directly parse sentences to avoid this problem.
             print(gps.nmea_sentence)
             gps_time = gps.datetime
         if gps.has_fix and gps_time != prev_gps_time:
-            print ("gps time fix acquired!")
+            print("gps time fix acquired!")
             gps_utc_seconds = time.mktime(gps_time)
             gps_est_seconds = gps_utc_seconds - est_offset + dst_offset
             rtc.datetime = time.localtime(gps_est_seconds)
             prev_gps_time = gps_time
-    #except:
-        #print("GPS RTC time set fail")
+        # except:
+        # print("GPS RTC time set fail")
         await asyncio.sleep(1.0)
-
-
-
-
-
 
 
 # async main function
@@ -1268,27 +1404,35 @@ async def main():  # Don't forget the async!
     d0_wifi_task = asyncio.create_task(d0_wifi(program_state))
     d0_barcodes_task = asyncio.create_task(d0_barcodes(program_state))
     d0_gps_task = asyncio.create_task(d0_gps(program_state))
+    d0_plants_task = asyncio.create_task(d0_plants(program_state))
     d2_barcodes_task = asyncio.create_task(d2_barcodes(program_state))
     d1_blank_task = asyncio.create_task(d1_blank(program_state))
     d1_datetime_task = asyncio.create_task(d1_datetime(program_state))
     d1_pm25_task = asyncio.create_task(d1_pm25(program_state, sensorvals))
     d1_tph_task = asyncio.create_task(d1_tph(program_state, sensorvals))
     d1_gps_timeset_task = asyncio.create_task(d1_gps_timeset(program_state))
-    #d2_pm25_task = asyncio.create_task(d2_pm25(program_state, sensorvals))
+    # d2_pm25_task = asyncio.create_task(d2_pm25(program_state, sensorvals))
     d2_blank_task = asyncio.create_task(d2_blank(program_state))
     d0_nyancat_task = asyncio.create_task(d0_nyancat(program_state))
-    poll_battery_task = asyncio.create_task(poll_battery(program_state, batt_sensor, sensorvals))
-    #gps_rtc_timeset_task = asyncio.create_task(gps_rtc_timeset(gps))
-    #rotary_0_task = asyncio.create_task(monitor_rotary(encoder_0, button_0, rotary_state_0))
-    poll_pmsa003i_task = asyncio.create_task(poll_pmsa003i(program_state, pm25, sensorvals))
+    poll_battery_task = asyncio.create_task(
+        poll_battery(program_state, batt_sensor, sensorvals)
+    )
+    # gps_rtc_timeset_task = asyncio.create_task(gps_rtc_timeset(gps))
+    # rotary_0_task = asyncio.create_task(monitor_rotary(encoder_0, button_0, rotary_state_0))
+    poll_pmsa003i_task = asyncio.create_task(
+        poll_pmsa003i(program_state, pm25, sensorvals)
+    )
     poll_sht40_task = asyncio.create_task(poll_sht40(program_state, sht, sensorvals))
-    poll_dps310_task = asyncio.create_task(poll_dps310(program_state, dps310, sensorvals))
-    airlift_scan_networks_task = asyncio.create_task(airlift_scan_networks(program_state))
-    #test_sensor_prints_task = asyncio.create_task(test_sensor_prints(sensorvals))
+    poll_dps310_task = asyncio.create_task(
+        poll_dps310(program_state, dps310, sensorvals)
+    )
+    airlift_scan_networks_task = asyncio.create_task(
+        airlift_scan_networks(program_state)
+    )
+    # test_sensor_prints_task = asyncio.create_task(test_sensor_prints(sensorvals))
     await asyncio.gather(state_switcher_task)
     #    await asyncio.gather(gps_timeset_task)  # Don't forget the await!
     print("done")
-
 
 
 asyncio.run(main())
