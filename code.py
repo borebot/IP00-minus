@@ -39,6 +39,7 @@ import adafruit_imageload
 import adafruit_gps
 import sharpdisplay
 import framebufferio
+import supervisor
 
 from adafruit_esp32spi import adafruit_esp32spi
 import adafruit_requests as requests
@@ -48,12 +49,17 @@ displayio.release_displays()
 
 
 time.sleep(0.2)
-i2c = busio.I2C(
-    board.SCL, board.SDA, frequency=5500
-)  # THIS IS REALLY SLOW I2C- 100000 was default and was still slow. This is so battery sensor works.
 
-# initialize SPI bus
-spi_bus = busio.SPI(board.SCK, board.MOSI, board.MISO)
+# this try/except deals with the problem of hard crashes when resetting: circuitpython doesn't always clear the buses on reset (especially with this multi-display unspported thing)
+try:
+    i2c = busio.I2C(
+        board.SCL, board.SDA, frequency=5500
+    )  # THIS IS REALLY SLOW I2C- 100000 was default and was still slow. This is so battery sensor works.
+
+    # initialize SPI bus
+    spi_bus = busio.SPI(board.SCK, board.MOSI, board.MISO)
+except:
+    supervisor.reload()
 
 # initialize airlift
 
