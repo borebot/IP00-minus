@@ -1,7 +1,6 @@
-### Refactored async watch code
 # TODO:
 # think about how to use encoder position and encoder delta to make behavior work as intended. see if you can fold that all into one Class.
-# keep working on GPS time. Dive into the I2C part of the GPS library to find a solution.
+# keep working on GPS time.
 import random
 import asyncio
 import board
@@ -25,6 +24,20 @@ import terminalio
 import adafruit_display_text
 from adafruit_display_text import label
 from adafruit_displayio_sh1107 import SH1107, DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297
+import neopixel
+
+#initialize neopixel. FIX DOUBLED NEOPIXEL
+pixel_pin = board.A2
+num_pixels = 1
+ORDER = neopixel.RGBW
+pixels = neopixel.NeoPixel(
+    pixel_pin, num_pixels, brightness=1.0, auto_write=False, pixel_order=ORDER
+)
+
+pixels.fill((0,0,0,0))
+pixels.show()
+
+
 from adafruit_seesaw import (
     seesaw,
     rotaryio,
@@ -50,7 +63,6 @@ displayio.release_displays()
 
 time.sleep(0.2)
 
-# this try/except deals with the problem of hard crashes when resetting: circuitpython doesn't always clear the buses on reset (especially with this multi-display unspported thing)
 try:
     i2c = busio.I2C(
         board.SCL, board.SDA, frequency=5500
@@ -107,6 +119,8 @@ enc_neopixel_1.brightness = 0.5
 # initialize battery sensor (the circuitpython implementation is buggy AF - if it crashes on startup, just change the i2c frequency above until it works.
 batt_sensor = LC709203F(i2c)
 batt_sensor.pack_size = PackSize.MAH3000
+
+
 
 # initialize gps
 gps = adafruit_gps.GPS_GtopI2C(i2c, debug=False)  # Use I2C interface
@@ -547,7 +561,7 @@ program_state = Programstate()
 
 
 async def state_switcher(program_state):
-    d0_state_count = 5
+    d0_state_count = 6
     d1_state_count = 4
     try:
         init_pos_0 = encoder_0.position
@@ -572,6 +586,8 @@ async def state_switcher(program_state):
                     d1_state_count = 2
                 if program_state.d0 == 4:
                     d1_state_count = 1
+                if program_state.d0 == 5:
+                    d1_state_count = 6
             if encoder_1.position != init_pos_1:
                 delta_1 = encoder_1.position - init_pos_1
                 program_state.d1 = (delta_1 + program_state.d1) % d1_state_count
@@ -794,6 +810,27 @@ async def d0_plants(program_state):
             d0_label_1.x = 0
             d0_label_1.y = 10
             d0_label_1.text = "Plants Placeholder!"
+
+        display_0.refresh()
+        await asyncio.sleep(0.5)
+
+
+# display 0 Plant State
+async def d0_flashlight(program_state):
+    while True:
+        if program_state.d0 == 5:
+            d0_label_1.hidden = False
+            d0_label_2.hidden = True
+            d0_label_3.hidden = True
+            d0_label_4.hidden = True
+            d0_label_5.hidden = True
+            d0_label_6.hidden = True
+            d0_label_7.hidden = True
+
+            d0_label_1.scale = 2
+            d0_label_1.x = 0
+            d0_label_1.y = 10
+            d0_label_1.text = "Flashlight!"
 
         display_0.refresh()
         await asyncio.sleep(0.5)
@@ -1076,6 +1113,248 @@ async def d1_gps_timeset(program_state):
                 display_1.refresh()
         await asyncio.sleep(0.2)
 
+async def d1_flashlight_1(program_state):
+    button_1_held = False
+    onoff_state = 0
+    while True:
+        #if not (program_state.d0 == 5):
+            #pixels.fill((0,0,0,0))
+            #pixels.show()
+        if program_state.d0 == 5 and program_state.d1 == 1:
+            d1_label_1.hidden = False
+            d1_label_2.hidden = False
+            d1_label_3.hidden = True
+            d1_label_4.hidden = True
+            d1_label_5.hidden = True
+            d1_label_6.hidden = True
+            d1_label_7.hidden = True
+
+            d1_label_1.scale = 1
+            d1_label_1.x = 0
+            d1_label_1.y = 18
+
+            d1_label_2.scale = 1
+            d1_label_2.x = 0
+            d1_label_2.y = 4
+            if not button_1.value and not button_1_held:
+                button_1_held = True
+                d1_label_1.text = ""
+                d1_label_2.text = ""
+                display_1.refresh()
+                print("Button 1 pressed")
+            if button_1.value and button_1_held:
+                button_1_held = False
+                d1_label_1.text = ""
+                display_1.refresh()
+                print("Button 1 released")
+                try:
+                    d1_label_1.text = ""
+                    d1_label_2.text = ""
+                    display_1.refresh()
+                    onoff_state = (onoff_state + 1) % 2
+                except:
+                    print("Flashlight fail.")
+            if onoff_state == 0:
+                d1_label_1.text = "RGBW"
+                d1_label_2.text = "OFF"
+                display_1.refresh()
+                pixels.fill((0,0,0,0))
+                pixels.show()
+            if onoff_state == 1:
+                d1_label_1.text = "RGBW"
+                d1_label_2.text = "ON"
+                display_1.refresh()
+                pixels.fill((255,255,255,255))
+                pixels.show()
+                
+        if program_state.d0 == 5 and program_state.d1 == 2:
+            d1_label_1.hidden = False
+            d1_label_2.hidden = False
+            d1_label_3.hidden = True
+            d1_label_4.hidden = True
+            d1_label_5.hidden = True
+            d1_label_6.hidden = True
+            d1_label_7.hidden = True
+
+            d1_label_1.scale = 1
+            d1_label_1.x = 0
+            d1_label_1.y = 18
+
+            d1_label_2.scale = 1
+            d1_label_2.x = 0
+            d1_label_2.y = 4
+            if not button_1.value and not button_1_held:
+                button_1_held = True
+                d1_label_1.text = ""
+                d1_label_2.text = ""
+                display_1.refresh()
+                print("Button 1 pressed")
+            if button_1.value and button_1_held:
+                button_1_held = False
+                d1_label_1.text = ""
+                display_1.refresh()
+                print("Button 1 released")
+                try:
+                    d1_label_1.text = ""
+                    d1_label_2.text = ""
+                    display_1.refresh()
+                    onoff_state = (onoff_state + 1) % 2
+                except:
+                    print("Flashlight fail.")
+            if onoff_state == 0:
+                d1_label_1.text = "OFF"
+                d1_label_2.text = "4000K White"
+                display_1.refresh()
+                pixels.fill((0,0,0,0))
+                pixels.show()
+            if onoff_state == 1:
+                d1_label_1.text = "ON"
+                d1_label_2.text = "4000K White"
+                display_1.refresh()
+                pixels.fill((0,0,0,255))
+                pixels.show()
+                
+        if program_state.d0 == 5 and program_state.d1 == 3:
+            d1_label_1.hidden = False
+            d1_label_2.hidden = False
+            d1_label_3.hidden = True
+            d1_label_4.hidden = True
+            d1_label_5.hidden = True
+            d1_label_6.hidden = True
+            d1_label_7.hidden = True
+
+            d1_label_1.scale = 1
+            d1_label_1.x = 0
+            d1_label_1.y = 18
+
+            d1_label_2.scale = 1
+            d1_label_2.x = 0
+            d1_label_2.y = 4
+            if not button_1.value and not button_1_held:
+                button_1_held = True
+                d1_label_1.text = ""
+                d1_label_2.text = ""
+                display_1.refresh()
+                print("Button 1 pressed")
+            if button_1.value and button_1_held:
+                button_1_held = False
+                d1_label_1.text = ""
+                display_1.refresh()
+                print("Button 1 released")
+                try:
+                    d1_label_1.text = ""
+                    d1_label_2.text = ""
+                    display_1.refresh()
+                    onoff_state = (onoff_state + 1) % 2
+                except:
+                    print("Flashlight fail.")
+            if onoff_state == 0:
+                d1_label_1.text = "OFF"
+                d1_label_2.text = "RED"
+                display_1.refresh()
+                pixels.fill((0,0,0,0))
+                pixels.show()
+            if onoff_state == 1:
+                d1_label_1.text = "ON"
+                d1_label_2.text = "RED"
+                display_1.refresh()
+                pixels.fill((255,0,0,0))
+                pixels.show()
+                
+        if program_state.d0 == 5 and program_state.d1 == 4:
+            d1_label_1.hidden = False
+            d1_label_2.hidden = False
+            d1_label_3.hidden = True
+            d1_label_4.hidden = True
+            d1_label_5.hidden = True
+            d1_label_6.hidden = True
+            d1_label_7.hidden = True
+
+            d1_label_1.scale = 1
+            d1_label_1.x = 0
+            d1_label_1.y = 18
+
+            d1_label_2.scale = 1
+            d1_label_2.x = 0
+            d1_label_2.y = 4
+            if not button_1.value and not button_1_held:
+                button_1_held = True
+                d1_label_1.text = ""
+                d1_label_2.text = ""
+                display_1.refresh()
+                print("Button 1 pressed")
+            if button_1.value and button_1_held:
+                button_1_held = False
+                d1_label_1.text = ""
+                display_1.refresh()
+                print("Button 1 released")
+                try:
+                    d1_label_1.text = ""
+                    d1_label_2.text = ""
+                    display_1.refresh()
+                    onoff_state = (onoff_state + 1) % 2
+                except:
+                    print("Flashlight fail.")
+            if onoff_state == 0:
+                d1_label_1.text = "OFF"
+                d1_label_2.text = "GREEN"
+                display_1.refresh()
+                pixels.fill((0,0,0,0))
+                pixels.show()
+            if onoff_state == 1:
+                d1_label_1.text = "ON"
+                d1_label_2.text = "GREEN"
+                display_1.refresh()
+                pixels.fill((0,255,0,0))
+                pixels.show()
+        
+        if program_state.d0 == 5 and program_state.d1 == 5:
+            d1_label_1.hidden = False
+            d1_label_2.hidden = False
+            d1_label_3.hidden = True
+            d1_label_4.hidden = True
+            d1_label_5.hidden = True
+            d1_label_6.hidden = True
+            d1_label_7.hidden = True
+
+            d1_label_1.scale = 1
+            d1_label_1.x = 0
+            d1_label_1.y = 18
+
+            d1_label_2.scale = 1
+            d1_label_2.x = 0
+            d1_label_2.y = 4
+            if not button_1.value and not button_1_held:
+                button_1_held = True
+                d1_label_1.text = ""
+                d1_label_2.text = ""
+                display_1.refresh()
+                print("Button 1 pressed")
+            if button_1.value and button_1_held:
+                button_1_held = False
+                d1_label_1.text = ""
+                display_1.refresh()
+                print("Button 1 released")
+                try:
+                    d1_label_1.text = ""
+                    d1_label_2.text = ""
+                    display_1.refresh()
+                    onoff_state = (onoff_state + 1) % 2
+                except:
+                    print("Flashlight fail.")
+            if onoff_state == 0:
+                d1_label_1.text = "OFF"
+                d1_label_2.text = "BLUE"
+                display_1.refresh()
+                pixels.fill((0,0,0,0))
+                pixels.show()
+            if onoff_state == 1:
+                d1_label_1.text = "ON"
+                d1_label_2.text = "BLUE"
+                display_1.refresh()
+                pixels.fill((0,0,255,0))
+                pixels.show()
+        await asyncio.sleep(0.2)
 
 async def d2_barcodes(program_state):
     while True:
@@ -1411,12 +1690,14 @@ async def main():  # Don't forget the async!
     d0_barcodes_task = asyncio.create_task(d0_barcodes(program_state))
     d0_gps_task = asyncio.create_task(d0_gps(program_state))
     d0_plants_task = asyncio.create_task(d0_plants(program_state))
+    d0_flashlight_task = asyncio.create_task(d0_flashlight(program_state))
     d2_barcodes_task = asyncio.create_task(d2_barcodes(program_state))
     d1_blank_task = asyncio.create_task(d1_blank(program_state))
     d1_datetime_task = asyncio.create_task(d1_datetime(program_state))
     d1_pm25_task = asyncio.create_task(d1_pm25(program_state, sensorvals))
     d1_tph_task = asyncio.create_task(d1_tph(program_state, sensorvals))
     d1_gps_timeset_task = asyncio.create_task(d1_gps_timeset(program_state))
+    d1_flashlight_1_task = asyncio.create_task(d1_flashlight_1(program_state))
     # d2_pm25_task = asyncio.create_task(d2_pm25(program_state, sensorvals))
     d2_blank_task = asyncio.create_task(d2_blank(program_state))
     d0_nyancat_task = asyncio.create_task(d0_nyancat(program_state))
