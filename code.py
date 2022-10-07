@@ -1,6 +1,5 @@
-# TODO:
-# think about how to use encoder position and encoder delta to make behavior work as intended. see if you can fold that all into one Class.
-# keep working on GPS time.
+#Note: RTC unit is failing (hence updated try/excepts.)
+#May need to rebuild watch hardware from scratch.
 import random
 import asyncio
 import board
@@ -612,49 +611,48 @@ async def d0_datetime(program_state):
 
             try:
                 t = rtc.datetime
+                if t.tm_hour == 0:
+                    hour_12 = 12
+                    ampm = "AM"
+                elif t.tm_hour > 0 and t.tm_hour < 12:
+                    hour_12 = t.tm_hour
+                    ampm = "AM"
+                elif t.tm_hour == 12:
+                    hour_12 = t.tm_hour
+                    ampm = "PM"
+                elif t.tm_hour > 12:
+                    hour_12 = t.tm_hour % 12
+                    ampm = "PM"
+                d0_label_1.scale = 2
+                d0_label_1.x = 0
+                d0_label_1.y = 8
+                d0_label_1.text = "%s" % (days[t.tm_wday]) + ","
+
+                d0_label_2.scale = 2
+                d0_label_2.x = 10
+                d0_label_2.y = 30
+                d0_label_2.text = "%02d/%02d/%d" % (t.tm_mon, t.tm_mday, t.tm_year)
+
+                d0_label_3.scale = 3
+                d0_label_3.x = 13
+                d0_label_3.y = 60
+                d0_label_3.text = "%02d:%02d" % (hour_12, t.tm_min)
+
+                d0_label_4.scale = 2
+                d0_label_4.x = 105
+                d0_label_4.y = 64
+                d0_label_4.text = ampm
+
+                d0_label_5.scale = 2
+                d0_label_5.x = 56
+                d0_label_5.y = 95
+                d0_label_5.text = "%02d" % (t.tm_sec)
             except:
                 print("RTC fail.")
-            if t.tm_hour == 0:
-                hour_12 = 12
-                ampm = "AM"
-            elif t.tm_hour > 0 and t.tm_hour < 12:
-                hour_12 = t.tm_hour
-                ampm = "AM"
-            elif t.tm_hour == 12:
-                hour_12 = t.tm_hour
-                ampm = "PM"
-            elif t.tm_hour > 12:
-                hour_12 = t.tm_hour % 12
-                ampm = "PM"
-            d0_label_1.scale = 2
-            d0_label_1.x = 0
-            d0_label_1.y = 8
-            d0_label_1.text = "%s" % (days[t.tm_wday]) + ","
-
-            d0_label_2.scale = 2
-            d0_label_2.x = 10
-            d0_label_2.y = 30
-            d0_label_2.text = "%02d/%02d/%d" % (t.tm_mon, t.tm_mday, t.tm_year)
-
-            d0_label_3.scale = 3
-            d0_label_3.x = 13
-            d0_label_3.y = 60
-            d0_label_3.text = "%02d:%02d" % (hour_12, t.tm_min)
-
-            d0_label_4.scale = 2
-            d0_label_4.x = 105
-            d0_label_4.y = 64
-            d0_label_4.text = ampm
-
-            d0_label_5.scale = 2
-            d0_label_5.x = 56
-            d0_label_5.y = 95
-            d0_label_5.text = "%02d" % (t.tm_sec)
-
-            d0_label_6.scale = 1
-            d0_label_6.x = 30
-            d0_label_6.y = 124
             try:
+                d0_label_6.scale = 1
+                d0_label_6.x = 30
+                d0_label_6.y = 124
                 d0_label_6.text = "Battery: %0.3f Volts / %0.1f%%" % (
                     sensorvals.voltage,
                     sensorvals.batt_percent,
@@ -877,49 +875,48 @@ async def d1_datetime(program_state):
             d1_label_7.hidden = False
             try:
                 t = rtc.datetime
+                if t.tm_hour == 0:
+                    hour_12 = 12
+                    ampm = "AM"
+                elif t.tm_hour > 0 and t.tm_hour < 12:
+                    hour_12 = t.tm_hour
+                    ampm = "AM"
+                elif t.tm_hour == 12:
+                    hour_12 = t.tm_hour
+                    ampm = "PM"
+                elif t.tm_hour > 12:
+                    hour_12 = t.tm_hour % 12
+                    ampm = "PM"
+                d1_label_1.scale = 2
+                d1_label_1.x = 0
+                d1_label_1.y = 8
+                d1_label_1.text = "%s" % (days[t.tm_wday]) + ","
+
+                d1_label_2.scale = 2
+                d1_label_2.x = 10
+                d1_label_2.y = 30
+                d1_label_2.text = "%02d/%02d/%d" % (t.tm_mon, t.tm_mday, t.tm_year)
+
+                d1_label_3.scale = 3
+                d1_label_3.x = 13
+                d1_label_3.y = 60
+                d1_label_3.text = "%02d:%02d" % (hour_12, t.tm_min)
+
+                d1_label_4.scale = 2
+                d1_label_4.x = 105
+                d1_label_4.y = 64
+                d1_label_4.text = ampm
+
+                d1_label_5.scale = 2
+                d1_label_5.x = 56
+                d1_label_5.y = 95
+                d1_label_5.text = "%02d" % (t.tm_sec)
             except:
                 print("RTC fail. D1")
-            if t.tm_hour == 0:
-                hour_12 = 12
-                ampm = "AM"
-            elif t.tm_hour > 0 and t.tm_hour < 12:
-                hour_12 = t.tm_hour
-                ampm = "AM"
-            elif t.tm_hour == 12:
-                hour_12 = t.tm_hour
-                ampm = "PM"
-            elif t.tm_hour > 12:
-                hour_12 = t.tm_hour % 12
-                ampm = "PM"
-            d1_label_1.scale = 2
-            d1_label_1.x = 0
-            d1_label_1.y = 8
-            d1_label_1.text = "%s" % (days[t.tm_wday]) + ","
-
-            d1_label_2.scale = 2
-            d1_label_2.x = 10
-            d1_label_2.y = 30
-            d1_label_2.text = "%02d/%02d/%d" % (t.tm_mon, t.tm_mday, t.tm_year)
-
-            d1_label_3.scale = 3
-            d1_label_3.x = 13
-            d1_label_3.y = 60
-            d1_label_3.text = "%02d:%02d" % (hour_12, t.tm_min)
-
-            d1_label_4.scale = 2
-            d1_label_4.x = 105
-            d1_label_4.y = 64
-            d1_label_4.text = ampm
-
-            d1_label_5.scale = 2
-            d1_label_5.x = 56
-            d1_label_5.y = 95
-            d1_label_5.text = "%02d" % (t.tm_sec)
-
-            d1_label_6.scale = 1
-            d1_label_6.x = 0
-            d1_label_6.y = 120
             try:
+                d1_label_6.scale = 1
+                d1_label_6.x = 0
+                d1_label_6.y = 120
                 d1_label_6.text = "Batt: %0.3fV / %0.1f%%" % (
                     sensorvals.voltage,
                     sensorvals.batt_percent,
@@ -1117,243 +1114,246 @@ async def d1_flashlight_1(program_state):
     button_1_held = False
     onoff_state = 0
     while True:
-        #if not (program_state.d0 == 5):
-            #pixels.fill((0,0,0,0))
-            #pixels.show()
-        if program_state.d0 == 5 and program_state.d1 == 1:
-            d1_label_1.hidden = False
-            d1_label_2.hidden = False
-            d1_label_3.hidden = True
-            d1_label_4.hidden = True
-            d1_label_5.hidden = True
-            d1_label_6.hidden = True
-            d1_label_7.hidden = True
+        try:
+            #if not (program_state.d0 == 5):
+                #pixels.fill((0,0,0,0))
+                #pixels.show()
+            if program_state.d0 == 5 and program_state.d1 == 1:
+                d1_label_1.hidden = False
+                d1_label_2.hidden = False
+                d1_label_3.hidden = True
+                d1_label_4.hidden = True
+                d1_label_5.hidden = True
+                d1_label_6.hidden = True
+                d1_label_7.hidden = True
 
-            d1_label_1.scale = 1
-            d1_label_1.x = 0
-            d1_label_1.y = 18
+                d1_label_1.scale = 1
+                d1_label_1.x = 0
+                d1_label_1.y = 18
 
-            d1_label_2.scale = 1
-            d1_label_2.x = 0
-            d1_label_2.y = 4
-            if not button_1.value and not button_1_held:
-                button_1_held = True
-                d1_label_1.text = ""
-                d1_label_2.text = ""
-                display_1.refresh()
-                print("Button 1 pressed")
-            if button_1.value and button_1_held:
-                button_1_held = False
-                d1_label_1.text = ""
-                display_1.refresh()
-                print("Button 1 released")
-                try:
+                d1_label_2.scale = 1
+                d1_label_2.x = 0
+                d1_label_2.y = 4
+                if not button_1.value and not button_1_held:
+                    button_1_held = True
                     d1_label_1.text = ""
                     d1_label_2.text = ""
                     display_1.refresh()
-                    onoff_state = (onoff_state + 1) % 2
-                except:
-                    print("Flashlight fail.")
-            if onoff_state == 0:
-                d1_label_1.text = "RGBW"
-                d1_label_2.text = "OFF"
-                display_1.refresh()
-                pixels.fill((0,0,0,0))
-                pixels.show()
-            if onoff_state == 1:
-                d1_label_1.text = "RGBW"
-                d1_label_2.text = "ON"
-                display_1.refresh()
-                pixels.fill((255,255,255,255))
-                pixels.show()
-                
-        if program_state.d0 == 5 and program_state.d1 == 2:
-            d1_label_1.hidden = False
-            d1_label_2.hidden = False
-            d1_label_3.hidden = True
-            d1_label_4.hidden = True
-            d1_label_5.hidden = True
-            d1_label_6.hidden = True
-            d1_label_7.hidden = True
+                    print("Button 1 pressed")
+                if button_1.value and button_1_held:
+                    button_1_held = False
+                    d1_label_1.text = ""
+                    display_1.refresh()
+                    print("Button 1 released")
+                    try:
+                        d1_label_1.text = ""
+                        d1_label_2.text = ""
+                        display_1.refresh()
+                        onoff_state = (onoff_state + 1) % 2
+                    except:
+                        print("Flashlight fail.")
+                if onoff_state == 0:
+                    d1_label_1.text = "RGBW"
+                    d1_label_2.text = "OFF"
+                    display_1.refresh()
+                    pixels.fill((0,0,0,0))
+                    pixels.show()
+                if onoff_state == 1:
+                    d1_label_1.text = "RGBW"
+                    d1_label_2.text = "ON"
+                    display_1.refresh()
+                    pixels.fill((255,255,255,255))
+                    pixels.show()
 
-            d1_label_1.scale = 1
-            d1_label_1.x = 0
-            d1_label_1.y = 18
+            if program_state.d0 == 5 and program_state.d1 == 2:
+                d1_label_1.hidden = False
+                d1_label_2.hidden = False
+                d1_label_3.hidden = True
+                d1_label_4.hidden = True
+                d1_label_5.hidden = True
+                d1_label_6.hidden = True
+                d1_label_7.hidden = True
 
-            d1_label_2.scale = 1
-            d1_label_2.x = 0
-            d1_label_2.y = 4
-            if not button_1.value and not button_1_held:
-                button_1_held = True
-                d1_label_1.text = ""
-                d1_label_2.text = ""
-                display_1.refresh()
-                print("Button 1 pressed")
-            if button_1.value and button_1_held:
-                button_1_held = False
-                d1_label_1.text = ""
-                display_1.refresh()
-                print("Button 1 released")
-                try:
+                d1_label_1.scale = 1
+                d1_label_1.x = 0
+                d1_label_1.y = 18
+
+                d1_label_2.scale = 1
+                d1_label_2.x = 0
+                d1_label_2.y = 4
+                if not button_1.value and not button_1_held:
+                    button_1_held = True
                     d1_label_1.text = ""
                     d1_label_2.text = ""
                     display_1.refresh()
-                    onoff_state = (onoff_state + 1) % 2
-                except:
-                    print("Flashlight fail.")
-            if onoff_state == 0:
-                d1_label_1.text = "OFF"
-                d1_label_2.text = "4000K White"
-                display_1.refresh()
-                pixels.fill((0,0,0,0))
-                pixels.show()
-            if onoff_state == 1:
-                d1_label_1.text = "ON"
-                d1_label_2.text = "4000K White"
-                display_1.refresh()
-                pixels.fill((0,0,0,255))
-                pixels.show()
-                
-        if program_state.d0 == 5 and program_state.d1 == 3:
-            d1_label_1.hidden = False
-            d1_label_2.hidden = False
-            d1_label_3.hidden = True
-            d1_label_4.hidden = True
-            d1_label_5.hidden = True
-            d1_label_6.hidden = True
-            d1_label_7.hidden = True
+                    print("Button 1 pressed")
+                if button_1.value and button_1_held:
+                    button_1_held = False
+                    d1_label_1.text = ""
+                    display_1.refresh()
+                    print("Button 1 released")
+                    try:
+                        d1_label_1.text = ""
+                        d1_label_2.text = ""
+                        display_1.refresh()
+                        onoff_state = (onoff_state + 1) % 2
+                    except:
+                        print("Flashlight fail.")
+                if onoff_state == 0:
+                    d1_label_1.text = "OFF"
+                    d1_label_2.text = "4000K White"
+                    display_1.refresh()
+                    pixels.fill((0,0,0,0))
+                    pixels.show()
+                if onoff_state == 1:
+                    d1_label_1.text = "ON"
+                    d1_label_2.text = "4000K White"
+                    display_1.refresh()
+                    pixels.fill((0,0,0,255))
+                    pixels.show()
 
-            d1_label_1.scale = 1
-            d1_label_1.x = 0
-            d1_label_1.y = 18
+            if program_state.d0 == 5 and program_state.d1 == 3:
+                d1_label_1.hidden = False
+                d1_label_2.hidden = False
+                d1_label_3.hidden = True
+                d1_label_4.hidden = True
+                d1_label_5.hidden = True
+                d1_label_6.hidden = True
+                d1_label_7.hidden = True
 
-            d1_label_2.scale = 1
-            d1_label_2.x = 0
-            d1_label_2.y = 4
-            if not button_1.value and not button_1_held:
-                button_1_held = True
-                d1_label_1.text = ""
-                d1_label_2.text = ""
-                display_1.refresh()
-                print("Button 1 pressed")
-            if button_1.value and button_1_held:
-                button_1_held = False
-                d1_label_1.text = ""
-                display_1.refresh()
-                print("Button 1 released")
-                try:
+                d1_label_1.scale = 1
+                d1_label_1.x = 0
+                d1_label_1.y = 18
+
+                d1_label_2.scale = 1
+                d1_label_2.x = 0
+                d1_label_2.y = 4
+                if not button_1.value and not button_1_held:
+                    button_1_held = True
                     d1_label_1.text = ""
                     d1_label_2.text = ""
                     display_1.refresh()
-                    onoff_state = (onoff_state + 1) % 2
-                except:
-                    print("Flashlight fail.")
-            if onoff_state == 0:
-                d1_label_1.text = "OFF"
-                d1_label_2.text = "RED"
-                display_1.refresh()
-                pixels.fill((0,0,0,0))
-                pixels.show()
-            if onoff_state == 1:
-                d1_label_1.text = "ON"
-                d1_label_2.text = "RED"
-                display_1.refresh()
-                pixels.fill((255,0,0,0))
-                pixels.show()
-                
-        if program_state.d0 == 5 and program_state.d1 == 4:
-            d1_label_1.hidden = False
-            d1_label_2.hidden = False
-            d1_label_3.hidden = True
-            d1_label_4.hidden = True
-            d1_label_5.hidden = True
-            d1_label_6.hidden = True
-            d1_label_7.hidden = True
+                    print("Button 1 pressed")
+                if button_1.value and button_1_held:
+                    button_1_held = False
+                    d1_label_1.text = ""
+                    display_1.refresh()
+                    print("Button 1 released")
+                    try:
+                        d1_label_1.text = ""
+                        d1_label_2.text = ""
+                        display_1.refresh()
+                        onoff_state = (onoff_state + 1) % 2
+                    except:
+                        print("Flashlight fail.")
+                if onoff_state == 0:
+                    d1_label_1.text = "OFF"
+                    d1_label_2.text = "RED"
+                    display_1.refresh()
+                    pixels.fill((0,0,0,0))
+                    pixels.show()
+                if onoff_state == 1:
+                    d1_label_1.text = "ON"
+                    d1_label_2.text = "RED"
+                    display_1.refresh()
+                    pixels.fill((255,0,0,0))
+                    pixels.show()
 
-            d1_label_1.scale = 1
-            d1_label_1.x = 0
-            d1_label_1.y = 18
+            if program_state.d0 == 5 and program_state.d1 == 4:
+                d1_label_1.hidden = False
+                d1_label_2.hidden = False
+                d1_label_3.hidden = True
+                d1_label_4.hidden = True
+                d1_label_5.hidden = True
+                d1_label_6.hidden = True
+                d1_label_7.hidden = True
 
-            d1_label_2.scale = 1
-            d1_label_2.x = 0
-            d1_label_2.y = 4
-            if not button_1.value and not button_1_held:
-                button_1_held = True
-                d1_label_1.text = ""
-                d1_label_2.text = ""
-                display_1.refresh()
-                print("Button 1 pressed")
-            if button_1.value and button_1_held:
-                button_1_held = False
-                d1_label_1.text = ""
-                display_1.refresh()
-                print("Button 1 released")
-                try:
+                d1_label_1.scale = 1
+                d1_label_1.x = 0
+                d1_label_1.y = 18
+
+                d1_label_2.scale = 1
+                d1_label_2.x = 0
+                d1_label_2.y = 4
+                if not button_1.value and not button_1_held:
+                    button_1_held = True
                     d1_label_1.text = ""
                     d1_label_2.text = ""
                     display_1.refresh()
-                    onoff_state = (onoff_state + 1) % 2
-                except:
-                    print("Flashlight fail.")
-            if onoff_state == 0:
-                d1_label_1.text = "OFF"
-                d1_label_2.text = "GREEN"
-                display_1.refresh()
-                pixels.fill((0,0,0,0))
-                pixels.show()
-            if onoff_state == 1:
-                d1_label_1.text = "ON"
-                d1_label_2.text = "GREEN"
-                display_1.refresh()
-                pixels.fill((0,255,0,0))
-                pixels.show()
-        
-        if program_state.d0 == 5 and program_state.d1 == 5:
-            d1_label_1.hidden = False
-            d1_label_2.hidden = False
-            d1_label_3.hidden = True
-            d1_label_4.hidden = True
-            d1_label_5.hidden = True
-            d1_label_6.hidden = True
-            d1_label_7.hidden = True
+                    print("Button 1 pressed")
+                if button_1.value and button_1_held:
+                    button_1_held = False
+                    d1_label_1.text = ""
+                    display_1.refresh()
+                    print("Button 1 released")
+                    try:
+                        d1_label_1.text = ""
+                        d1_label_2.text = ""
+                        display_1.refresh()
+                        onoff_state = (onoff_state + 1) % 2
+                    except:
+                        print("Flashlight fail.")
+                if onoff_state == 0:
+                    d1_label_1.text = "OFF"
+                    d1_label_2.text = "GREEN"
+                    display_1.refresh()
+                    pixels.fill((0,0,0,0))
+                    pixels.show()
+                if onoff_state == 1:
+                    d1_label_1.text = "ON"
+                    d1_label_2.text = "GREEN"
+                    display_1.refresh()
+                    pixels.fill((0,255,0,0))
+                    pixels.show()
 
-            d1_label_1.scale = 1
-            d1_label_1.x = 0
-            d1_label_1.y = 18
+            if program_state.d0 == 5 and program_state.d1 == 5:
+                d1_label_1.hidden = False
+                d1_label_2.hidden = False
+                d1_label_3.hidden = True
+                d1_label_4.hidden = True
+                d1_label_5.hidden = True
+                d1_label_6.hidden = True
+                d1_label_7.hidden = True
 
-            d1_label_2.scale = 1
-            d1_label_2.x = 0
-            d1_label_2.y = 4
-            if not button_1.value and not button_1_held:
-                button_1_held = True
-                d1_label_1.text = ""
-                d1_label_2.text = ""
-                display_1.refresh()
-                print("Button 1 pressed")
-            if button_1.value and button_1_held:
-                button_1_held = False
-                d1_label_1.text = ""
-                display_1.refresh()
-                print("Button 1 released")
-                try:
+                d1_label_1.scale = 1
+                d1_label_1.x = 0
+                d1_label_1.y = 18
+
+                d1_label_2.scale = 1
+                d1_label_2.x = 0
+                d1_label_2.y = 4
+                if not button_1.value and not button_1_held:
+                    button_1_held = True
                     d1_label_1.text = ""
                     d1_label_2.text = ""
                     display_1.refresh()
-                    onoff_state = (onoff_state + 1) % 2
-                except:
-                    print("Flashlight fail.")
-            if onoff_state == 0:
-                d1_label_1.text = "OFF"
-                d1_label_2.text = "BLUE"
-                display_1.refresh()
-                pixels.fill((0,0,0,0))
-                pixels.show()
-            if onoff_state == 1:
-                d1_label_1.text = "ON"
-                d1_label_2.text = "BLUE"
-                display_1.refresh()
-                pixels.fill((0,0,255,0))
-                pixels.show()
+                    print("Button 1 pressed")
+                if button_1.value and button_1_held:
+                    button_1_held = False
+                    d1_label_1.text = ""
+                    display_1.refresh()
+                    print("Button 1 released")
+                    try:
+                        d1_label_1.text = ""
+                        d1_label_2.text = ""
+                        display_1.refresh()
+                        onoff_state = (onoff_state + 1) % 2
+                    except:
+                        print("Flashlight fail.")
+                if onoff_state == 0:
+                    d1_label_1.text = "OFF"
+                    d1_label_2.text = "BLUE"
+                    display_1.refresh()
+                    pixels.fill((0,0,0,0))
+                    pixels.show()
+                if onoff_state == 1:
+                    d1_label_1.text = "ON"
+                    d1_label_2.text = "BLUE"
+                    display_1.refresh()
+                    pixels.fill((0,0,255,0))
+                    pixels.show()
+        except:
+            print("flashlight error.")
         await asyncio.sleep(0.2)
 
 async def d2_barcodes(program_state):
@@ -1571,45 +1571,48 @@ async def airlift_scan_networks(program_state):
             # print("button_0: " + str(button_0.value))
             # print("button_1: " + str(button_1.value))
             # print(" ")
-            if not button_1.value and not button_1_held:
-                button_1_held = True
-                d1_label_1.text = "Release!"
-                d1_label_2.text = "2.4GHz SSID SCAN..."
-                display_1.refresh()
-                print("Button 1 pressed")
-                scan_results = True
-            if button_1.value and button_1_held:
-                button_1_held = False
-                d1_label_1.text = ""
-                display_1.refresh()
-                print("Button 1 released")
-                try:
-                    d1_label_1.text = "Scanning..."
+            try:
+                if not button_1.value and not button_1_held:
+                    button_1_held = True
+                    d1_label_1.text = "Release!"
+                    d1_label_2.text = "2.4GHz SSID SCAN..."
                     display_1.refresh()
-                    ap_list_string = ""
-                    for ap in airlift.scan_networks():
-                        print(
-                            "\t%s\t\tRSSI: %d" % (str(ap["ssid"], "utf-8"), ap["rssi"])
-                        )
-                        ap_list_string = (
-                            ap_list_string
-                            + (
-                                "%.14s %ddBm"
-                                % (
-                                    str(ap["ssid"] + "                      ", "utf-8"),
-                                    ap["rssi"],
-                                )
+                    print("Button 1 pressed")
+                    scan_results = True
+                if button_1.value and button_1_held:
+                    button_1_held = False
+                    d1_label_1.text = ""
+                    display_1.refresh()
+                    print("Button 1 released")
+                    try:
+                        d1_label_1.text = "Scanning..."
+                        display_1.refresh()
+                        ap_list_string = ""
+                        for ap in airlift.scan_networks():
+                            print(
+                                "\t%s\t\tRSSI: %d" % (str(ap["ssid"], "utf-8"), ap["rssi"])
                             )
-                            + "\n"
-                        )
-                    d1_label_1.text = ap_list_string
-                    d1_label_2.text = "2.4GHz Scan Results:"
-                    display_1.refresh()
-                except:
-                    print("airlift scan fail")
-            if scan_results == False:
-                d1_label_1.text = "Click to scan! 0_0"
-                d1_label_2.text = "2.4GHz SSID SCAN..."
+                            ap_list_string = (
+                                ap_list_string
+                                + (
+                                    "%.14s %ddBm"
+                                    % (
+                                        str(ap["ssid"] + "                      ", "utf-8"),
+                                        ap["rssi"],
+                                    )
+                                )
+                                + "\n"
+                            )
+                        d1_label_1.text = ap_list_string
+                        d1_label_2.text = "2.4GHz Scan Results:"
+                        display_1.refresh()
+                    except:
+                        print("airlift scan fail")
+                if scan_results == False:
+                    d1_label_1.text = "Click to scan! 0_0"
+                    d1_label_2.text = "2.4GHz SSID SCAN..."
+            except:
+                print("airlift error!")
         await asyncio.sleep(0.2)
 
 
